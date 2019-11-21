@@ -32,21 +32,27 @@ def draw(event, x, y, flags, param):
     elif event == cv2.EVENT_MOUSEMOVE:
         if drawing == True:
             end = (x,y)
-            cv2.line(userMask, start, end, (255, 255, 255), 20)
-            img = JoinOnMask(glacierMerged, newImage, userMask)
+            cv2.line(userMask, start, end, (255, 255, 255), 40)
+            img = JoinOnMask(glacierMerged, img, userMask)
             start = (x, y)
 
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
 
-f = "Glacier.jpg"
-I = cv2.imread(f)
-I = cv2.cvtColor(I, cv2.COLOR_BGR2RGB)
-h,w,c = I.shape
-splitHeight = int(h/2)
+# f = "Glacier.jpg"
+# I = cv2.imread(f)
+# I = cv2.cvtColor(I, cv2.COLOR_BGR2RGB)
+# h,w,c = I.shape
+# splitHeight = int(h/2)
+#
+# oldImage = I[0:splitHeight,:,:]
+# newImage = I[splitHeight:h,:,:]
 
-oldImage = I[0:splitHeight,:,:]
-newImage = I[splitHeight:h,:,:]
+f = easygui.fileopenbox()
+newImage = cv2.imread(f)
+
+f2 = easygui.fileopenbox()
+oldImage = cv2.imread(f2)
 
 glacierMask = oldImage.copy()
 glacierMaskBorder = oldImage.copy()
@@ -84,14 +90,16 @@ glacierContour, hierarchy = cv2.findContours(glacierMask, cv2.RETR_TREE, cv2.CHA
 cv2.drawContours(glacierMaskBorder,glacierContour,0,(255,255,255),2)
 glacierMaskBorder = cv2.cvtColor(glacierMaskBorder, cv2.COLOR_BGR2GRAY)
 glacierMerged = cv2.inpaint(oldGlacierNew,glacierMaskBorder, 1, cv2.INPAINT_TELEA)
+glacierMerged = cv2.cvtColor(glacierMerged, cv2.COLOR_BGR2RGB)
 
 
 windowName = 'Drawing'
 drawing = False
 userMask = newImage.copy()
-usermask[:,:,:] = 0
+userMask[:,:,:] = 0
 
 img = newImage.copy()
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 cv2.namedWindow(windowName)
 cv2.setMouseCallback(windowName, draw)
 while (True):
