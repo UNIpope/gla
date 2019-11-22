@@ -5,12 +5,12 @@ from matplotlib import pyplot as plt
 from matplotlib import image as image
 import easygui
 
-def close(mask,x,y):
+def closeMask(mask,x,y):
     shapeC = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(x,y))
     Cmask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,shapeC)
     return Cmask
 
-def open(mask,x,y):
+def openMask(mask,x,y):
     shapeO = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(x,y))
     Omask = cv2.morphologyEx(mask,cv2.MORPH_OPEN,shapeO)
     return Omask
@@ -39,36 +39,36 @@ def draw(event, x, y, flags, param):
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
 
-# f = "Glacier.jpg"
-# I = cv2.imread(f)
-# I = cv2.cvtColor(I, cv2.COLOR_BGR2RGB)
-# h,w,c = I.shape
-# splitHeight = int(h/2)
+f = "glacier.jpg"
+I = cv2.imread(f)
+I = cv2.cvtColor(I, cv2.COLOR_BGR2RGB)
+h,w,c = I.shape
+splitHeight = int(h/2)
+
+oldImage = I[0:splitHeight,:,:]
+newImage = I[splitHeight:(2*splitHeight),:,:]
+
+# f = easygui.fileopenbox()
+# newImage = cv2.imread(f)
 #
-# oldImage = I[0:splitHeight,:,:]
-# newImage = I[splitHeight:h,:,:]
-
-f = easygui.fileopenbox()
-newImage = cv2.imread(f)
-
-f2 = easygui.fileopenbox()
-oldImage = cv2.imread(f2)
+# f2 = easygui.fileopenbox()
+# oldImage = cv2.imread(f2)
 
 glacierMask = oldImage.copy()
 glacierMaskBorder = oldImage.copy()
 glacierMask[:,:,:] = 0
 glacierMaskBorder[:,:,:] = 0
 
-lower = np.array([50,50,80])
+lower = np.array([0,0,0])
 upper = np.array([140,140,140])
 mask = cv2.inRange(newImage,lower,upper)
 
-closed = close(mask,20,30)
-opened = open(closed,15,15)
+closed = closeMask(mask,20,30)
+opened = openMask(closed,15,15)
 
 mountain = cv2.bitwise_and(oldImage,oldImage,mask=opened)
 
-lower = np.array([190,190,190])
+lower = np.array([170,150,150])
 upper = np.array([255,255,255])
 whiteMask = cv2.inRange(mountain,lower,upper)
 
@@ -82,7 +82,7 @@ for contour in contours:
     i += 1
 
 cv2.drawContours(glacierMask,contours,contourI,(255,255,255),-1)
-glacierMask = close(glacierMask,15,15)
+glacierMask = closeMask(glacierMask,15,15)
 oldGlacierNew = JoinOnMask(oldImage,newImage,glacierMask)
 
 glacierMask = cv2.cvtColor(glacierMask, cv2.COLOR_BGR2GRAY)
@@ -114,7 +114,7 @@ cv2.destroyAllWindows()
 # plt.subplot(2, 2, 3)
 # plt.imshow(newImage)
 # plt.subplot(2, 2, 2)
-# plt.imshow(glacierMerged)
+# plt.imshow(whiteMask)
 # plt.subplot(2, 2, 4)
-# plt.imshow(glacierMask)
+# plt.imshow(mountain)
 # plt.show()
