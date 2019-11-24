@@ -1,3 +1,11 @@
+import numpy as np
+import cv2
+import math
+from tkinter import *
+from matplotlib import pyplot as plt
+from matplotlib import image as image
+import easygui
+
 # Step 1
 # Create two copies of the original image, and zero them out, this will be used later for masks,
 # but the images need to be the same size as the original images
@@ -22,12 +30,15 @@
 # of the largest contour earlier
 # Step 8
 # Set variables for the drawing function and call the setMouseCallback, and imshow in a while loop
-import numpy as np
-import cv2
-import math
-from matplotlib import pyplot as plt
-from matplotlib import image as image
-import easygui
+
+
+newImagef = None
+oldImagef = None
+
+def selectImage():
+    f = easygui.fileopenbox()
+
+    return f
 
 def closeMask(mask,x,y):
     shapeC = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(x,y))
@@ -63,20 +74,43 @@ def draw(event, x, y, flags, param):
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
 
-# Step 0
-f = "glacier.jpg"
-I = cv2.imread(f)
-I = cv2.cvtColor(I, cv2.COLOR_BGR2RGB)
-h,w,c = I.shape
-splitHeight = int(h/2)
-oldImage = I[0:splitHeight,:,:]
-newImage = I[splitHeight:(2*splitHeight),:,:]
 
-# f = easygui.fileopenbox()
-# newImage = cv2.imread(f)
-#
-# f2 = easygui.fileopenbox()
-# oldImage = cv2.imread(f2)
+def im1Select():
+    oldImageSelect = selectImage()
+
+    global oldImagef
+    oldImagef = oldImageSelect
+
+
+
+def im2Select():
+    newImageSelect = selectImage()
+
+    global newImagef
+    newImagef = newImageSelect
+
+
+window = Tk()
+window.geometry("500x500")
+window.title("Repeat Photography")
+
+label1=Label(window, text="Quantify Glacial Erosion \n in two photos", relief="solid", width=20, font=("arial",19,"bold"))
+label1.place(x=90,y=53)
+
+im1Button = Button(window, text= "Old Image", width= 12, command=im1Select, bg="brown", fg="white")
+im1Button.place(x=130,y=360)
+
+im2Button = Button(window, text= "New Image", width= 12, command=im2Select, bg="brown", fg="white")
+im2Button.place(x=260,y=360)
+
+GoButton = Button(window, text="GO",width = 12, command=window.destroy)
+GoButton.place(x=200, y=280)
+
+
+window.mainloop()
+
+oldImage = cv2.imread(oldImagef)
+newImage = cv2.imread(newImagef)
 
 # Step 1
 glacierMask = oldImage.copy()
@@ -120,7 +154,6 @@ glacierContour, hierarchy = cv2.findContours(glacierMask, cv2.RETR_TREE, cv2.CHA
 cv2.drawContours(glacierMaskBorder,glacierContour,0,(255,255,255),2)
 glacierMaskBorder = cv2.cvtColor(glacierMaskBorder, cv2.COLOR_BGR2GRAY)
 glacierMerged = cv2.inpaint(oldGlacierNew,glacierMaskBorder, 1, cv2.INPAINT_TELEA)
-glacierMerged = cv2.cvtColor(glacierMerged, cv2.COLOR_BGR2RGB)
 
 # Step 8
 windowName = 'Drawing'
@@ -128,7 +161,6 @@ drawing = False
 userMask = newImage.copy()
 userMask[:,:,:] = 0
 img = newImage.copy()
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 cv2.namedWindow(windowName)
 cv2.setMouseCallback(windowName, draw)
 while (True):
